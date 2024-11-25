@@ -73,8 +73,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [_WIN_FN_LYR] = LAYOUT( // 1
         _______,  KC_MYCM,  KC_WHOM,  KC_MAIL,  KC_CALC,  KC_MSEL,  KC_MSTP,  KC_MPRV,  KC_MPLY,  KC_MNXT,  KC_MUTE,  KC_VOLD,  KC_VOLU,  KC_SCRL,  _______,
-        MY_GRV,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  KC_END,
-        _______,  MY_CONS,  MY_TASK,  C(KC_F),  C(KC_R),  _______,  KC_PGUP,  KC_HOME,  KC_UP,    KC_END,   KC_PSCR,  KC_SCRL,  KC_INS,   _______,  KC_SCRL,
+        KC_GRV,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  KC_END,
+        MY_GRV,   MY_CONS,  MY_TASK,  C(KC_F),  C(KC_R),  _______,  KC_PGUP,  KC_HOME,  KC_UP,    KC_END,   KC_PSCR,  KC_SCRL,  KC_INS,   _______,  KC_SCRL,
         _______,  KC_LALT,  KC_LGUI,  KC_LSFT,  KC_LCTL,  _______,  KC_PGDN,  KC_LEFT,  KC_DOWN,  KC_RIGHT, KC_HOME,  KC_END,             _______,  KC_RCTL,
         _______,  MY_UNDO,  MY_CUT,   MY_COPY,  MY_PASTE, KC_SPC,   _______,  _______,  MY_BACK,  MY_FWD,   _______,  MO_CTL,             _______,
         _______,  _______,  _______,                      _______,                                KC_RCTL,  _______,            _______,  _______,  _______
@@ -97,8 +97,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [_NAV_LYR] = LAYOUT( // 4
         _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,
-        MY_GRV,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  TG_NAV,
-        _______,  MY_CONS,  MY_TASK,  C(KC_F),  C(KC_R),  _______,  KC_PGUP,  KC_HOME,  KC_UP,    KC_END,   KC_PSCR,  KC_SCRL,  KC_INS,   _______,  _______,
+        KC_GRV,   _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  _______,  TG_NAV,
+        MY_GRV,   MY_CONS,  MY_TASK,  C(KC_F),  C(KC_R),  _______,  KC_PGUP,  KC_HOME,  KC_UP,    KC_END,   KC_PSCR,  KC_SCRL,  KC_INS,   _______,  _______,
         _______,  KC_LALT,  KC_LGUI,  KC_LSFT,  KC_LCTL,  _______,  KC_PGDN,  KC_LEFT,  KC_DOWN,  KC_RIGHT, KC_HOME,  KC_END,             _______,  _______,
         _______,  MY_UNDO,  MY_CUT,   MY_COPY,  MY_PASTE, KC_SPC,   _______,  _______,  MY_BACK,  MY_FWD,   _______,  _______,            _______,
         _______,  _______,  _______,                      _______,                                KC_RCTL,  _______,            _______,  _______,  _______
