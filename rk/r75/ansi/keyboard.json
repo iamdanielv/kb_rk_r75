@@ -29,7 +29,7 @@
         }
     },
     "dynamic_keymap": {
-        "layer_count": 6
+        "layer_count": 5
     },
     "processor": "WB32FQ95",
     "indicators": {
@@ -165,7 +165,6 @@
             {"matrix": [5, 1], "x": 16, "y": 60, "flags": 4},
             {"matrix": [5, 2], "x": 32, "y": 60, "flags": 4},
             {"matrix": [5, 5], "x": 80, "y": 60, "flags": 4}
-
         ]
     },
     "url": "",

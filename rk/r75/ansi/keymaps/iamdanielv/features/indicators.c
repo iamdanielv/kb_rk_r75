@@ -1,72 +1,107 @@
-#include "color.h"
 #include "quantum.h"
 #include "rgb_matrix.h"
 #include "action_layer.h"
+#include "config.h"
 
 #include "indicators.h"
 #include "defines.h"
 #include "indicator_queue.h"
 #include "fn_mode.h"
 
-// clang-format off
-/*  LED Matrix
-    ESC  F1   F2   F3   F4   F5   F6   F7   F8   F9   F10  F11  F12  DEL  MUTE
-    21   20   19   18   17   16   15   14   13   12   11   10   9    8
-
-    GRV  1    2    3    4    5    6    7    8    9    0    -    =    BSPC HOME
-    22   23   24   25   26   27   28   29   30   31   32   33   34   35   7
-
-    TAB  Q    W    E    R    T    Y    U    I    O    P    [    ]    BSLS PGUP
-    49   48   47   46   45   44   43   42   41   40   39   38   37   36   6
-
-    CAPS A    S    D    F    G    H    J    K    L    ;    '         ENT  PGDN
-    50   51   52   53   54   55   56   57   58   59   60   61        62   5
-
-    LSFT Z    X    C    V    B    N    M    ,    .    /    RSFT      UP
-    75   74   73   72   71   70   69   68   67   66   65   64        63
-
-    LCTL LG   LALT           SPC            RALT Fn       LEFT      DOWN RGHT
-    76   77   78             79             0     1         2         3    4
-*/
-// clang-format on
-
 /******************
  * RGB Indicators *
  ******************/
+
+rgb_t get_complementary_rgb(rgb_t rgb_led, bool darken) {
+    uint8_t new_r = 0xFF - rgb_led.r;
+    uint8_t new_g = 0xFF - rgb_led.g;
+    uint8_t new_b = 0xFF - rgb_led.b;
+
+    if (darken) {
+        // darken the new color by shifting all values down
+        if (new_r > 0x80) { new_r = new_r - 0x80;}
+        if (new_g > 0x80) { new_g = new_g - 0x80;}
+        if (new_b > 0x80) { new_b = new_b - 0x80;}
+    }
+
+    return (rgb_t){.r = new_r, .g = new_g, .b = new_b};
+}
+
+hsv_t get_hsv_color_shifted(hsv_t color, uint8_t offset, bool clockwise) {
+    if (clockwise) {
+        if (color.h > offset) {
+            color.h = color.h - offset;
+        } else {
+            color.h = 255 - color.h;
+        }
+    } else {
+        if (color.h < (255 - offset)) {
+            color.h = color.h + offset;
+        } else {
+            color.h = color.h - (255 - offset);
+        }
+    }
+    return color;
+}
+
+hsv_t get_base_hsv_color_inverse(void) {
+    // get the current base hsv value
+    hsv_t base_color = rgb_matrix_get_hsv();
+
+    return get_hsv_color_shifted(base_color, 128, false);
+}
+
+hsv_t get_base_hsv_color_shifted(bool clockwise) {
+    // get the current base hsv value
+    hsv_t base_color = rgb_matrix_get_hsv();
+
+    return get_hsv_color_shifted(base_color, 21, clockwise);
+}
+
+hsv_t get_base_hsv_color_shifted_quarter(bool clockwise) {
+    // get the current base hsv value
+    hsv_t base_color = rgb_matrix_get_hsv();
+
+    // offset hue by a quarter
+    return get_hsv_color_shifted(base_color, 64, clockwise);
+}
+
+
+const uint8_t numbers_keys[] = {N1_KI, N2_KI, N3_KI, N4_KI, N5_KI, N6_KI, N7_KI, N8_KI, N9_KI, N0_KI, MINS_KI, EQL_KI};
+
 void blink_numbers(bool isEnabling) {
-    for (int i = 34; i >= 23; i--) // 1(23) to EQL(34)
-    {
+    for (int num = 0; num < 12; num++) {
         if (isEnabling) {
             // enabling, flash white
-            indicator_enqueue(i, 200, 3, RGB_WHITE);
+            indicator_enqueue(numbers_keys[num], 200, 2, RGB_WHITE);
         } else {
             // disabling, flash red
-            indicator_enqueue(i, 150, 4, RGB_RED);
+            indicator_enqueue(numbers_keys[num], 150, 2, RGB_RED);
         }
     }
 }
 
 void blink_arrows(void) {
-    indicator_enqueue(2, 200, 3, RGB_WHITE); // left
-    indicator_enqueue(3, 200, 3, RGB_WHITE); // down
-    indicator_enqueue(63, 200, 3, RGB_WHITE); // up
-    indicator_enqueue(4, 200, 3, RGB_WHITE); // right
+    indicator_enqueue(UP_KI, 200, 2, RGB_WHITE);    // up
+    indicator_enqueue(LEFT_KI, 200, 2, RGB_WHITE);  // left
+    indicator_enqueue(DOWN_KI, 200, 2, RGB_WHITE);  // down
+    indicator_enqueue(RIGHT_KI, 200, 2, RGB_WHITE); // right
 }
 
 void blink_space(bool extended) {
-    indicator_enqueue(79, 200, 3, RGB_WHITE); // blink space too
+    indicator_enqueue(SPACE_KI, 200, 2, RGB_WHITE); // blink space
     if (extended) {
-        indicator_enqueue(78, 200, 3, RGB_BLACK);  // blink left alt
-        indicator_enqueue(0, 200, 3, RGB_BLACK); // blink right alt
+        indicator_enqueue(LEFT_ALT_KI, 200, 2, RGB_BLACK);  // blink left alt
+        indicator_enqueue(RIGHT_ALT_KI, 200, 2, RGB_BLACK); // blink right alt
     }
 }
 
 void blink_NKRO(bool isEnabling) {
     if (isEnabling) {
         const uint8_t led_indexes[12] = {
-            71,  70,  69,  68, 67, // V B N M ,
-            58, 57, 56, 55,     // K J H G
-            43, 42, 41          // Y U I
+            V_KI, B_KI, N_KI, M_KI, COMM_KI, // V B N M ,
+            G_KI, H_KI, J_KI, K_KI,          // G H J K
+            Y_KI, U_KI, I_KI                 // Y U I
         };
 
         for (int i = 0; i < 12; i++) {
@@ -74,8 +109,8 @@ void blink_NKRO(bool isEnabling) {
         }
     } else {
         const uint8_t led_indexes[4] = {
-            70, 68, // B M
-            56, 57 // H J
+            B_KI, M_KI, // B M
+            H_KI, J_KI  // H J
         };
 
         for (int i = 0; i < 4; i++) {
@@ -84,16 +119,9 @@ void blink_NKRO(bool isEnabling) {
     }
 }
 
-void highlight_fn_keys(uint8_t led_min, uint8_t led_max) {
-    // get the current hsv value
-    HSV current_hsv = rgb_matrix_get_hsv();
-    // maximize brightness
-    current_hsv.v = 255;
-
-    rgb_led_t rgb     = hsv_to_rgb(current_hsv);
-    rgb_led_t new_rgb = get_complementary_color(rgb, false);
-    for (int i = 23; i <= 34; i++) { // 23 - 34 are the number keys and - =
-        RGB_MATRIX_INDICATOR_SET_COLOR(i, new_rgb.r, new_rgb.g, new_rgb.b);
+void highlight_fn_keys(rgb_t color, uint8_t led_min, uint8_t led_max) {
+    for (int num = 0; num < 12; num++) {
+        RGB_MATRIX_INDICATOR_SET_COLOR(numbers_keys[num], color.r, color.g, color.b);
     }
 }
 
@@ -110,108 +138,138 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         }
     }
 
-    if (IS_LAYER_ON(_WIN_FN_LYR) ||
-        // IS_LAYER_ON(_CTL_LYR) ||  //ignore the CTL layer since we want to see RGB effects on that layer
-        IS_LAYER_ON(_NUM_LYR) ||
-        IS_LAYER_ON(_NAV_LYR) ||
-        IS_LAYER_ON(_FN_LYR)) {
-        // we are in a custom layer, clear all background colors
-        // this will make our custom colors stand out more
-        for (int i = led_min; i <= led_max; i++) {
-            RGB_MATRIX_INDICATOR_SET_COLOR(i, 0, 0, 0);
-        }
-    }
+    // determine the colors to use for each of the layers
+    hsv_t base_hsv_offset_qrt_ccw = get_base_hsv_color_shifted_quarter(false);
+    hsv_t base_hsv_offset_qrt_cw  = get_base_hsv_color_shifted_quarter(true);
+    hsv_t base_hsv_offset         = get_base_hsv_color_shifted(false);
+    hsv_t base_hsv_inverse        = get_base_hsv_color_inverse();
 
-    if (fn_mode_enabled) {
-        highlight_fn_keys(led_min, led_max);
-    }
+    rgb_t wfn_lyr_rgb    = hsv_to_rgb(base_hsv_offset);
+    rgb_t accent_lyr_rgb = hsv_to_rgb(base_hsv_offset_qrt_cw);
+    rgb_t num_lyr_rgb    = hsv_to_rgb(base_hsv_offset_qrt_ccw);
+    rgb_t fn_swp_rgb     = hsv_to_rgb(base_hsv_inverse);
 
     if (IS_LAYER_ON(_WIN_FN_LYR)) {
         // this layer has many functions, so just change the whole color
         for (int i = led_min; i <= led_max; i++) {
-            RGB_MATRIX_INDICATOR_SET_COLOR(i, 0xC0, 0x3D, 0x00);
+            // RGB_MATRIX_INDICATOR_SET_COLOR(i, 0xC0, 0x3D, 0x00);
+            RGB_MATRIX_INDICATOR_SET_COLOR(i, wfn_lyr_rgb.r, wfn_lyr_rgb.g, wfn_lyr_rgb.b);
         }
 
-        // no matter what, this layer also uses fn keys
-        //highlight_fn_keys(led_min, led_max);
+        // highlight the arrow keys
+        RGB_MATRIX_INDICATOR_SET_COLOR(I_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b); // up - I
+        RGB_MATRIX_INDICATOR_SET_COLOR(J_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b); // left - J
+        RGB_MATRIX_INDICATOR_SET_COLOR(K_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b); // down - K
+        RGB_MATRIX_INDICATOR_SET_COLOR(L_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b); // right - L
 
-        // highlight right shift as moving to ctl layer
-        RGB_MATRIX_INDICATOR_SET_COLOR(64, 0, 255, 255);
+        // higlight the f key to show home row
+        RGB_MATRIX_INDICATOR_SET_COLOR(F_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b); // f key
+
+        // swap FN key
+        RGB_MATRIX_INDICATOR_SET_COLOR(LEFT_CTL_KI, fn_swp_rgb.r, fn_swp_rgb.g, fn_swp_rgb.b);
+
+        // layer lock key
+        RGB_MATRIX_INDICATOR_SET_COLOR(LEFT_WIN_KI, 32, 0x00, 0x00); // left GUI/win
+
+        // turn off the left alt key led to make left win stand out more
+        RGB_MATRIX_INDICATOR_SET_COLOR(LEFT_ALT_KI, 0x00, 0x00, 0x00);
+    }
+
+    // FN Key mode is done after the base win layer and the win fn layer
+    // because they can both modify the state of the FN keys
+    if (fn_mode_enabled) {
+        highlight_fn_keys(fn_swp_rgb, led_min, led_max);
     }
 
     if (IS_LAYER_ON(_CTL_LYR)) {
-        const uint8_t led_indexes[4] = {
-            5, // use PgDn as indicator
-            39, // P for persistent color
-            69,  // N for NKRO
-            76   // lctl for Fn toggle
-        };
-        for (int i = 0; i < 4; i++) {
-            RGB_MATRIX_INDICATOR_SET_COLOR(led_indexes[i], 0x00, 0x80, 0x80);
-        }
+        // keys specific to this layer
+        RGB_MATRIX_INDICATOR_SET_COLOR(P_KI, 128, 128, 128);  // P for persistent color
+        RGB_MATRIX_INDICATOR_SET_COLOR(N_KI, 128, 128, 128);  // N for NKRO
+        RGB_MATRIX_INDICATOR_SET_COLOR(FN_KI, 128, 128, 128); // fn key
 
-        // turn off some of the LEDS to make it easier to see our indicators
-        const uint8_t led_off_indexes[15] = {
-            51, 7, 6,     // A, Home, PgUp
-            2, 3, 4, 63, // Arrow keys
-            49, 50, 75,  77,  // TAB, CAPS, LSFT, LG
-            78,  79, 0, 1  // LALT, SPC, RALT, Fn
-        };
-        for (int i = 0; i < 15; i++) {
-            RGB_MATRIX_INDICATOR_SET_COLOR(led_off_indexes[i], 0x00, 0x00, 0x00);
-        }
+        // turn off the left win and alt key leds to make left ctl stand out more
+        RGB_MATRIX_INDICATOR_SET_COLOR(LEFT_WIN_KI, 0x00, 0x00, 0x00);
+        RGB_MATRIX_INDICATOR_SET_COLOR(LEFT_ALT_KI, 0x00, 0x00, 0x00);
+
+        // swap FN key
+        RGB_MATRIX_INDICATOR_SET_COLOR(LEFT_CTL_KI, fn_swp_rgb.r, fn_swp_rgb.g, fn_swp_rgb.b);
 
         // highlight Q as reset
-        RGB_MATRIX_INDICATOR_SET_COLOR(48, 0xFF, 0x00, 0x00);
+        RGB_MATRIX_INDICATOR_SET_COLOR(Q_KI, 0xFF, 0x00, 0x00);
 
         // highlight Z as clear eeprom
-        RGB_MATRIX_INDICATOR_SET_COLOR(74, 0x7A, 0x00, 0xFF);
+        RGB_MATRIX_INDICATOR_SET_COLOR(Z_KI, 0x7A, 0x00, 0xFF);
+
+        // highlight right shift as toggle Win Fn Layer
+        RGB_MATRIX_INDICATOR_SET_COLOR(RIGHT_SFT_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b);
+        // highlight page down as toggle Win Fn Layer
+        RGB_MATRIX_INDICATOR_SET_COLOR(PGDN_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b);
+
+        // highlight right alt as toggle Num Layer
+        RGB_MATRIX_INDICATOR_SET_COLOR(RIGHT_ALT_KI, num_lyr_rgb.r, num_lyr_rgb.g, num_lyr_rgb.b);
+        // highlight page up as toggle Num Layer
+        RGB_MATRIX_INDICATOR_SET_COLOR(PGUP_KI, num_lyr_rgb.r, num_lyr_rgb.g, num_lyr_rgb.b);
+
+        // layer lock key
+        RGB_MATRIX_INDICATOR_SET_COLOR(HOME_KI, 0x80, 0x00, 0x00); // Home/End key
+
+        // dim the arrow keys
+        RGB_MATRIX_INDICATOR_SET_COLOR(UP_KI, 32, 32, 32);
+        RGB_MATRIX_INDICATOR_SET_COLOR(LEFT_KI, 32, 32, 32);
+        RGB_MATRIX_INDICATOR_SET_COLOR(DOWN_KI, 32, 32, 32);
+        RGB_MATRIX_INDICATOR_SET_COLOR(RIGHT_KI, 32, 32, 32);
     }
 
     if (IS_LAYER_ON(_NUM_LYR)) {
-        const uint8_t led_indexes[20] = {
-            6, // use PgUp as indicator
-
-            // Light up the numpad to make it easier to see
-            // 6 is used as numlock and starts the numpad
-            28, 29, 30, 31, 32, 33, 34, // 6, 7, 8, 9, Asterisk, minus, equals
-            42, 41, 40, 39,             // U, I, O, P = 4, 5, 6, Plus
-            57, 58, 59, 60,             // J, K, L, ; = 1, 2, 3, Enter
-            68, 67, 66, 65              // M, ,, ., / = 0, dot, dot, slash
-        };
-
-        for (int i = 0; i < 20; i++) {
-            RGB_MATRIX_INDICATOR_SET_COLOR(led_indexes[i], 0, 255, 0);
-        }
-    }
-
-    if (IS_LAYER_ON(_NAV_LYR)) {
-        // this layer has many functions, so just change the whole color
+        // clear out all the leds so we only light up the ones we care about
+        // this will make our custom colors stand out more
         for (int i = led_min; i <= led_max; i++) {
-            RGB_MATRIX_INDICATOR_SET_COLOR(i, 0x00, 0x00, 0xFF);
+            RGB_MATRIX_INDICATOR_SET_COLOR(i, 0, 0, 0);
         }
 
-        RGB_MATRIX_INDICATOR_SET_COLOR(7, 0xFF, 0xFF, 0xFF); // use home key as toggle indicator
+        const uint8_t numpad_keys[19] = {
+            //  Light up the numpad to make it easier to see
+            N6_KI,                                            // 6 = 6 is used as numlock indicator and starts the numpad
+            N7_KI, N8_KI,   N9_KI,  N0_KI,   MINS_KI, EQL_KI, // 7, 8, 9, 0 = 7, 8, 9, Asterisk, minus, equals
+            U_KI,  I_KI,    O_KI,   P_KI,                     // U, I, O, P = 4, 5, 6, Plus
+            J_KI,  K_KI,    L_KI,   SCLN_KI,                  // J, K, L, ; = 1, 2, 3, Enter
+            M_KI,  COMM_KI, DOT_KI, SLSH_KI                   // M, ,, ., / = 0, dot, dot, slash
+        };
+        for (int i = 0; i < 19; i++) {
+            RGB_MATRIX_INDICATOR_SET_COLOR(numpad_keys[i], num_lyr_rgb.r, num_lyr_rgb.g, num_lyr_rgb.b);
+        }
+
+        // highlight the mouse keys
+        RGB_MATRIX_INDICATOR_SET_COLOR(W_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b); // up - W
+        RGB_MATRIX_INDICATOR_SET_COLOR(A_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b); // left - A
+        RGB_MATRIX_INDICATOR_SET_COLOR(S_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b); // down - S
+        RGB_MATRIX_INDICATOR_SET_COLOR(D_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b); // right - D
+
+        // layer toggle keys
+        RGB_MATRIX_INDICATOR_SET_COLOR(RIGHT_ALT_KI, 32, 0x00, 0x00);
+        RGB_MATRIX_INDICATOR_SET_COLOR(PGUP_KI, 32, 0x00, 0x00);
     }
 
     if (IS_LAYER_ON(_FN_LYR)) {
-        // highlight the toggle buttons
-        RGB_MATRIX_INDICATOR_SET_COLOR(7, 0, 0, 255);   // NAV = Home
-        RGB_MATRIX_INDICATOR_SET_COLOR(6, 0, 255, 0);   // NUM = PgUp
-        RGB_MATRIX_INDICATOR_SET_COLOR(5, 0, 255, 255); // CTL = PgDn
+        const uint8_t media_keys[6] = {
+            // KC_MPRV,  KC_MPLY,  KC_MNXT,  KC_MUTE,  KC_VOLD,  KC_VOLU
+            FN7_KI, FN8_KI, FN9_KI, FN10_KI, FN11_KI, FN12_KI};
 
-        // highlight right shift as moving to ctl layer
-        RGB_MATRIX_INDICATOR_SET_COLOR(64, 0, 255, 255);
-
-        // highlight the aux buttons on right of keyboard
-        const uint8_t led_indexes[7] = {
-            0,                    // highlight the RALT button
-            14, 13, 12, 11, 10, 9 // used for media keys = 6 keys
-        };
-
-        for (int i = 0; i < 7; i++) {
-            RGB_MATRIX_INDICATOR_SET_COLOR(led_indexes[i], 128, 128, 128);
+        for (int i = 0; i < 6; i++) {
+            RGB_MATRIX_INDICATOR_SET_COLOR(media_keys[i], 128, 128, 128);
         }
+
+        // highlight the RALT button
+        RGB_MATRIX_INDICATOR_SET_COLOR(RIGHT_ALT_KI, 128, 128, 128);
+
+        // highlight page down as toggle Win Fn Layer
+        RGB_MATRIX_INDICATOR_SET_COLOR(PGDN_KI, accent_lyr_rgb.r, accent_lyr_rgb.g, accent_lyr_rgb.b);
+
+        // highlight page up as toggle Num Layer
+        RGB_MATRIX_INDICATOR_SET_COLOR(PGUP_KI, num_lyr_rgb.r, num_lyr_rgb.g, num_lyr_rgb.b);
+
+        // layer lock key
+        RGB_MATRIX_INDICATOR_SET_COLOR(HOME_KI, 0x80, 0x00, 0x00); // Home/End key
     }
 
     process_indicator_queue(led_min, led_max);
