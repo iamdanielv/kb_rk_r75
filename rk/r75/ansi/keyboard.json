@@ -11,6 +11,7 @@
     },
     "features": {
         "bootmagic": true,
+        "command": false,
         "encoder": true,
         "extrakey": true,
         "mousekey": true,
@@ -29,7 +30,7 @@
         }
     },
     "dynamic_keymap": {
-        "layer_count": 5
+        "layer_count": 6
     },
     "processor": "WB32FQ95",
     "indicators": {
