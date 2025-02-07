@@ -8,8 +8,7 @@ enum layer_names {
     EXT_LYR,     // 1
     KBCTL_LYR,   // 2
     NUM_LYR,     // 3
-    MEDIA_LYR,   // 4
-    SPARE        // 5
+    MEDIA_LYR    // 4
 };
 
 // clang-format off
@@ -112,7 +111,7 @@ enum layer_names {
 #define COMM_KI 67 // ,
 #define DOT_KI 66  // .
 #define BSLS_KI 36 // \ backslash
-#define SLSH_KI 65 // /
+#define SLSH_KI 65 // / forwardslash
 #define SCLN_KI 60 // ;
 #define QUOT_KI 61 // '
 #define MINS_KI 33 // -
