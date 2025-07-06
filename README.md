@@ -55,19 +55,18 @@ I use `6 layers` for my changes, `keyboard.json` specifies that in the following
 You can now use QMK builder with the following command:
 
 ```shell
-qmk compile -j 0 -kb rk/r75/ansi -km iamdanielv
+qmk compile -j 0 -kb rk/r75/iamdanielv -km iamdanielv
 ```
 
 > the `-j 0` uses parallel build to speed it up a bit
 
-qmk should generate a new bin file: `rk_r75_ansi_iamdanielv.bin` in your qmk_firmware folder.
+qmk should generate a new bin file: `rk_r75_iamdanielv_iamdanielv.bin.bin` in your qmk_firmware folder.
 
-For me it was: `C:\Users\<USER>\qmk_firmware\rk_r75_ansi_iamdanielv.bin`
+For me it was: `C:\Users\<USER>\qmk_firmware\rk_r75_iamdanielv_iamdanielv.bin`
 
 I've included a version of [my custom firmware](extras/rk_r75_ansi_iamdanielv.bin) that works well for me. There you will also find the [original firmware](extras/RK_R75_Wired_Version-20240928T211918Z-001.zip) in case something goes horribly wrong. I got that zip from their official website, but when you load that firmware it labels the R75 as the PRO version in VIA, the firmware works, but you have to load the JSON file from that zip.
 
 The VIA json file I provided in the extras folder, [VIA JSON](extras/R75_Wired_Windows_QMK.json) works with the firmware generated with this repo.
-
 
 - [Original](extras/RK_R75_Wired_Version-20240928T211918Z-001.zip)
 - [Custom](extras/rk_r75_ansi_iamdanielv.bin)
