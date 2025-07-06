@@ -1,6 +1,6 @@
 {
-    "manufacturer": "HS",
-    "keyboard_name": "R75",
+    "manufacturer": "RK",
+    "keyboard_name": "Royal Kludge R75",
     "maintainer": "sdk66",
     "bootloader": "wb32-dfu",
     "diode_direction": "ROW2COL",
@@ -30,7 +30,7 @@
         }
     },
     "dynamic_keymap": {
-        "layer_count": 5
+        "layer_count": 6
     },
     "processor": "WB32FQ95",
     "indicators": {
@@ -171,7 +171,6 @@
     "url": "",
     "usb": {
         "device_version": "0.0.1",
-        "force_nkro": true,
         "pid": "0xE484",
         "suspend_wakeup_delay": 1000,
         "vid": "0x342D"

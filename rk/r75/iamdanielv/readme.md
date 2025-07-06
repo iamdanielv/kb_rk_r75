@@ -1,7 +1,7 @@
 # R75
 
 * Keyboard Maintainer: [iamdanielv](https://github.com/iamdanielv)
-* Hardware Supported: R75
+* Hardware Supported: R75 Wired version
 * Hardware Availability: [rk](http://www.rkgaming.com)
 
 To reset the board into bootloader mode, do one of the following:

@@ -4,11 +4,12 @@
 #pragma once
 
 enum layer_names {
-    BASE_LYR,    // 0
-    EXT_LYR,     // 1
-    KBCTL_LYR,   // 2
-    NUM_LYR,     // 3
-    MEDIA_LYR    // 4
+    BASE_LYR,     // 0 - regular qwerty
+    HRM_BASE_LYR, // 1 - home row mods qwerty
+    EXT_LYR,      // 2 - similar to extend
+    KBCTL_LYR,    // 3 - keyboard control layer
+    NUM_LYR,      // 4 - numpad
+    MEDIA_LYR     // 5 - media keys
 };
 
 // clang-format off
@@ -36,6 +37,10 @@ enum layer_names {
 // ***************
 // * Key Indexes *
 // ***************
+
+#define ESC_KI 21
+#define BSPC_KI 35
+
 // Modifiers
 #define GRV_KI 22
 #define TAB_KI 49
@@ -127,11 +132,47 @@ enum layer_names {
 // ******************************
 // * Aliases to simplify keymap *
 // ******************************
+
+// *****************
+// * Home Row Mods *
+// *****************
+// based on: https://precondition.github.io/home-row-mods#getting-started-with-home-row-mods-on-qmk
+
+// Left-hand home row mods
+#define GUI_A LGUI_T(KC_A)
+#define ALT_S LALT_T(KC_S)
+#define SFT_D LSFT_T(KC_D)
+#define CTL_F LCTL_T(KC_F)
+
+// Right-hand home row mods
+#define CTL_J RCTL_T(KC_J)
+#define SFT_K RSFT_T(KC_K)
+#define ALT_L RALT_T(KC_L)
+#define GUI_SCLN RGUI_T(KC_SCLN)
+
+// *******************************
+// * More keycodes for HRM Layer *
+// *******************************
+#define CTLS_C C_S_T(KC_C) // tap: C ; hold: ctl and shift
+
+// Keycodes using the LT(0,KC) trick
+#define CTLH_T    LT(0, KC_T) // tap: t; hold: ctl and h
+#define CTLR_R    LT(0, KC_R) // tap: r; hold: ctl and r
+#define CTLG_G    LT(0, KC_G) // tap: G ; hold: ctl and g
+#define LSFT_LLCK LT(0, KC_LSFT) // double tap: Layer lock ; hold: left shift
+#define HM_SCLN   LT(0, KC_SCLN) // tap: ; ; hold: Home key
+#define END_QUOT  LT(0, KC_QUOT) // tap: ' ; hold: End key
+#define ALFT_COMM LT(0, KC_COMM) // tap: , ; hold: alt and left arrow
+#define ARGT_DOT  LT(0, KC_DOT) // tap: . ; hold: alt and right arrow
+#define MY_ENT    LT(0, KC_ENT) // tap: Enter ; hold: Shift
+
 #define MO_CAPS   TD(TD_MO_CAPS)
-#define MO_RALT   LT(MEDIA_LYR, KC_RALT)
+#define MO_RALT   TD(TD_RALT)
 #define MY_GRV    TD(TD_GRV)
 
-// shortcuts
+// *************
+// * Shortcuts *
+// *************
 #define MY_UNDO   C(KC_Z)
 #define MY_CUT    C(KC_X)
 #define MY_COPY   C(KC_INS)
@@ -143,6 +184,9 @@ enum layer_names {
 #define MSW_UP    KC_MS_WH_UP
 #define MSW_DN    KC_MS_WH_DOWN
 
+// ***********
+// * Toggles *
+// ***********
 #define TG_NUM    TG(NUM_LYR)
 #define TG_EXT    TG(EXT_LYR)
 #define TG_KBCTL  TG(KBCTL_LYR)
@@ -150,3 +194,7 @@ enum layer_names {
 #define MO_KBCTL  MO(KBCTL_LYR)
 #define TD_KB_RST TD(TD_RESET)
 #define TD_KB_CLR TD(TD_CLEAR)
+
+// by default, use a regular key layout without home row mods
+// the KB_CTL_LYR can toggle the home row mod enabled layer
+#define TG_HRM TG(HRM_BASE_LYR)
